@@ -92,7 +92,21 @@
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,72,.4)}50%{box-shadow:0 0 0 6px rgba(255,182,72,0)}}
 
   footer{margin-top:22px;text-align:center;font-size:11px;color:#5f7897;line-height:1.7}
-  .log{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--muted);min-height:18px;text-align:left;word-break:break-all}
+  .log{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--muted);text-align:left}
+  .log-title{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .log-title .blip{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(46,204,113,.15)}
+  .log-body{
+    height:118px;overflow-y:auto;overflow-x:hidden;word-break:break-all;line-height:1.6;
+    display:flex;flex-direction:column;gap:5px;scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+  }
+  .log-body::-webkit-scrollbar{width:4px}
+  .log-body::-webkit-scrollbar-thumb{background:#3a5573;border-radius:4px}
+  .log-line{color:var(--muted);font-size:11px;flex:0 0 auto}
+  .log-line .ts{color:#5f7897;margin-right:6px}
+  .log-line.ok{color:var(--green)}
+  .log-line.err{color:var(--red)}
+  .log-line.prog{color:var(--amber)}
 
   .toast{
     position:fixed;left:50%;bottom:calc(30px + var(--safe-bottom));transform:translate(-50%,20px);
@@ -165,7 +179,10 @@
     </div>
   </div>
 
-  <div class="log" id="log" data-page-node-id="ImW5hviGfy7In5l4dAcvxQ">准备就绪，点击任意按钮下发指令。</div>
+  <div class="log" data-page-node-id="ImW5hviGfy7In5l4dAcvxQ">
+    <div class="log-title"><span class="blip"></span>执行日志 · 最近消息</div>
+    <div class="log-body" id="log"><div class="log-line"><span class="ts">--:--:--</span>准备就绪，点击任意按钮下发指令。</div></div>
+  </div>
 
   <footer data-page-node-id="QWmwdhfIJY7cQshvuJSJKt">
     远程点击器控制面板 · 巴法云 MQTT<br data-page-node-id="evSutNq0FwNMUTZop6Misu">指令经加密链路下发至设备
@@ -204,9 +221,19 @@
     clearTimeout(toastTimer);
     toastTimer=setTimeout(function(){toast.className='toast';},2200);
   }
-  function log(msg){
+  function log(msg,kind){
     var t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
-    logEl.textContent='['+t+'] '+msg;
+    var line=document.createElement('div');
+    line.className='log-line'+(kind?' '+kind:'');
+    var ts=document.createElement('span');
+    ts.className='ts';
+    ts.textContent=t;
+    line.appendChild(ts);
+    line.appendChild(document.createTextNode(msg));
+    logEl.appendChild(line);
+    // 只保留最近 30 条，避免无限增长
+    while(logEl.childElementCount>30)logEl.removeChild(logEl.firstChild);
+    logEl.scrollTop=logEl.scrollHeight;
   }
 
   function resetSteps(){
@@ -239,7 +266,7 @@
       var onlyOne = currentMsg==='1' ? null : singleStep[currentMsg];
       for(var i=0;i<codes.length;i++)markDone(codes[i],onlyOne);
       if(codes.length){
-        log('设备进度：'+codes.join(' → '));
+        log('设备进度：'+codes.join(' → '),'prog');
         setStatus('on','设备在线 · 执行中');
       }
     }).catch(function(){});
@@ -287,12 +314,12 @@
     request(url).then(function(){
       showToast('✓ '+name+' 已发送');
       setStatus('on','设备在线 · 指令已下发');
-      log('成功：'+name+' 指令已送达设备，等待设备回传进度…');
+      log('成功：'+name+' 指令已送达设备，等待设备回传进度…','ok');
       startPolling(msg);
     }).catch(function(e){
       showToast('✗ 发送失败：'+e.message,true);
       setStatus('','发送失败，请重试');
-      log('失败：'+name+'（'+e.message+'）');
+      log('失败：'+name+'（'+e.message+'）','err');
     }).then(function(){
       busy=false;
       btn.classList.remove('sending');
