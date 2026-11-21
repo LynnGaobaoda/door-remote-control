@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="OA4KBksp7COLIcDxc16Hq6">
+<head data-page-node-id="lMxAvUT9U9Y0cCKsWLoYMf">
+<meta charset="UTF-8" data-page-node-id="4ScNERA9BKyuF4qazUIRNU">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" data-page-node-id="G8gEHR2tCtmNztHR5FJ4i2">
+<meta name="theme-color" content="#0d1b2a" data-page-node-id="PWLv6OJ9Qghzg48rBsz94F">
+<title>远程控制 · 门禁点击器</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --bg2:#13263b; --card:#1b324d; --card-hi:#24425f;
+    --line:#2c4a6b; --text:#eaf2fb; --muted:#8fa8c4;
+    --blue:#3b9dff; --green:#2ecc71; --amber:#ffb648; --purple:#a78bfa; --red:#ff5c6c;
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#17314e 0%,var(--bg) 60%);
+    color:var(--text);min-height:100%;display:flex;justify-content:center;
+    -webkit-user-select:none;user-select:none;
+  }
+  .app{width:100%;max-width:480px;padding:24px 20px calc(28px + var(--safe-bottom));display:flex;flex-direction:column}
+
+  header{text-align:center;margin-bottom:22px}
+  .logo{
+    width:62px;height:62px;margin:0 auto 12px;border-radius:18px;
+    background:linear-gradient(145deg,#24425f,#162c45);
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .logo svg{width:32px;height:32px}
+  h1{font-size:20px;font-weight:600;margin:0 0 6px;letter-spacing:.5px}
+  .sub{font-size:13px;color:var(--muted);margin:0}
+
+  .status{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:12px;color:var(--muted);margin:16px 0 18px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.25s}
+  .dot.on{background:var(--green);box-shadow:0 0 0 4px rgba(46,204,113,.15)}
+  .dot.busy{background:var(--amber);box-shadow:0 0 0 4px rgba(255,182,72,.15)}
+
+  .primary{
+    width:100%;border:1px solid #2f7ad6;border-radius:20px;
+    background:linear-gradient(145deg,#2f7ad6,#1f5fa8);
+    color:#fff;padding:22px 18px;margin-bottom:18px;cursor:pointer;
+    display:flex;align-items:center;gap:16px;text-align:left;
+    box-shadow:0 10px 28px rgba(47,122,214,.32);transition:transform .08s,filter .15s;
+  }
+  .primary:active{transform:scale(.98);filter:brightness(1.1)}
+  .primary .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .primary .ic svg{width:26px;height:26px}
+  .primary .t1{font-size:18px;font-weight:600}
+  .primary .t2{font-size:12px;opacity:.85;margin-top:4px;line-height:1.4}
+  .primary .arrow{margin-left:auto;opacity:.8;font-size:20px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .btn{
+    border:1px solid var(--line);border-radius:18px;background:var(--card);
+    color:var(--text);padding:20px 16px;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;gap:12px;min-height:132px;
+    transition:transform .08s,background .15s,border-color .15s;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  .btn .ic svg{width:22px;height:22px}
+  .btn .name{font-size:16px;font-weight:600}
+  .btn .desc{font-size:11px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .btn.c-back .ic{background:rgba(59,157,255,.16);color:var(--blue)}
+  .btn.c-prev .ic{background:rgba(167,139,250,.16);color:var(--purple)}
+  .btn.c-gate .ic{background:rgba(255,182,72,.16);color:var(--amber)}
+  .btn.c-open .ic{background:rgba(255,92,108,.16);color:var(--red);border:1px solid rgba(255,92,108,.35)}
+  .btn.c-open .name{color:var(--red)}
+  .btn.sending{opacity:.55;pointer-events:none}
+
+  footer{margin-top:22px;text-align:center;font-size:11px;color:#5f7897;line-height:1.7}
+  .log{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--muted);min-height:18px;text-align:left;word-break:break-all}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(30px + var(--safe-bottom));transform:translate(-50%,20px);
+    background:#fff;color:#12233a;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:500;
+    box-shadow:0 12px 40px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:9;
+    display:flex;align-items:center;gap:8px;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.err{background:#ffe9ec;color:#9b1c2b}
+  .toast svg{width:18px;height:18px}
+</style>
+</head>
+<body data-page-node-id="QSx767fHrENooLFi7qWj0g">
+<div class="app" data-page-node-id="OZNypuby5XH622RdMc24dM">
+  <header data-page-node-id="TiXETcQXAdyWEz4mvx1Cgl">
+    <div class="logo" data-page-node-id="LwrUK6hf152MZAjLasNpiy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7fc0ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="xFEdMTQi04s9dT1JAhuaiE">
+        <path d="M3 21h18M5 21V7l7-4 7 4v14" data-page-node-id="FnJ5j9RKPrUH3QTVWMjIPz"/><path d="M9 21v-6h6v6" data-page-node-id="aLJR97LHUw0Bq3fBEEXzwH"/><path d="M8 10h.01M12 10h.01M16 10h.01" data-page-node-id="ijAhbGck0WcirYmRxykHyx"/>
+      </svg>
+    </div>
+    <h1 data-page-node-id="DadSCCRstpgBtjLwinH5Gt">门禁远程控制</h1>
+    <p class="sub" data-page-node-id="y22BiPu4WMoN6QrdPGCpBC">点击按钮 · 远程下发指令</p>
+  </header>
+
+  <div class="status" data-page-node-id="246wgPT4ODhGIifIrgrMcW">
+    <span class="dot" id="dot" data-page-node-id="Gso8ABK5rf2X7Cn8t6re2z"></span>
+    <span id="statusText" data-page-node-id="fRR11u2xv2ddRAd7zTURUF">设备状态未知</span>
+  </div>
+
+  <button class="primary" data-msg="1" data-name="全流程" data-page-node-id="WapSClYA67wo44wUo8DLzY">
+    <span class="ic" data-page-node-id="5YVHGXE7jJHO9PFlgA5pPd">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="S3AISI4NrAQhzi9XGHPvZ5"><path d="M5 3l14 9-14 9V3z" data-page-node-id="CRnFs703O0ER4FZomjvLgD"/></svg>
+    </span>
+    <span data-page-node-id="lzbIZbaHuA7vVkU0no5lcW">
+      <span class="t1" data-page-node-id="RUeJD6UXvNrZhNsHu4z3bX">全流程</span><br data-page-node-id="BhR1EeDANNPvNvi5UfGR6m">
+      <span class="t2" data-page-node-id="X5fqKjKkk4zIcuvV3PZnpX">亮屏 → 预览 → 门禁 → 解锁，一键完成</span>
+    </span>
+    <span class="arrow" data-page-node-id="ZZkVVBZr8HFDKKDGJvvH80">›</span>
+  </button>
+
+  <div class="grid" data-page-node-id="sVyxMWlx3yP9ZvurB5seAJ">
+    <button class="btn c-back" data-msg="2" data-name="返回" data-page-node-id="hdnMAbjuxdA78bMKWGxIFQ">
+      <span class="ic" data-page-node-id="yFfmNKxELseSBJAAkwOnvY"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="A4gx77r2MdrHmW8uIFNJEE"><path d="M9 14L4 9l5-5" data-page-node-id="sm6cjvNGJHzYEdbzbg8mhr"/><path d="M4 9h9a7 7 0 0 1 7 7v4" data-page-node-id="tm0LKEL00QEiko5ZAUu7GB"/></svg></span>
+      <span data-page-node-id="wTJBzfMfgqa1xzecsJCJpI"><span class="name" data-page-node-id="JwdVIKWteJqGv5TIqPAxHo">返回</span><span class="desc" data-page-node-id="Y4k5AMRVCdr6tTY6HPnWPP">点亮屏幕 / 返回上一页</span></span>
+    </button>
+
+    <button class="btn c-prev" data-msg="3" data-name="预览" data-page-node-id="AOzTHNttlvkDBrRO5HpQIR">
+      <span class="ic" data-page-node-id="OrrCJIil1M1KjSAxMvThDL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="iEjEYIL60Kzqz9SocTXbBt"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" data-page-node-id="R1R5gIm1Am8CvhoqRfyToj"/><circle cx="12" cy="12" r="3" data-page-node-id="j9AV7Bu2a6A2hpZ0LFnSdm"/></svg></span>
+      <span data-page-node-id="ki4ek5MMq0WSsZtHRzloRL"><span class="name" data-page-node-id="q4muyGIobpnIycrPBZhIwY">预览</span><span class="desc" data-page-node-id="wUJmB5LLz41Lfq8cjt2khm">打开监控 / 门口机页面</span></span>
+    </button>
+
+    <button class="btn c-gate" data-msg="4" data-name="门禁" data-page-node-id="w7VHxCIjHPEk7D29GAACmO">
+      <span class="ic" data-page-node-id="ux7DDEjuVAdNBTBBlHkKgQ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="6KtaamlsxX4JHDaKJqYWta"><rect x="4" y="3" width="16" height="18" rx="2" data-page-node-id="VgTQmrFSpy1QuYPIM14wIs"/><path d="M9 21V8l6-2v15" data-page-node-id="bZcCU77oHFzRxXgCeX4BWy"/><circle cx="13" cy="13" r=".8" fill="currentColor" data-page-node-id="E80jqc7EDHvFaYfkFNMX3C"/></svg></span>
+      <span data-page-node-id="ZDeW98ChmJnJ80tdCGKlUG"><span class="name" data-page-node-id="R3GxihvFvL18N3RmvbVtJy">门禁</span><span class="desc" data-page-node-id="8E1HzsL1HRKGEJbqfW97oh">选择 4-1 主机门口</span></span>
+    </button>
+
+    <button class="btn c-open" data-msg="5" data-name="解锁" data-page-node-id="liRLDNsIevmVzTCo3qncDu">
+      <span class="ic" data-page-node-id="EE4lw2tpGQW7Ue2clhW30T"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="F8IFW2AzndDoz4yESbKEOQ"><rect x="4" y="11" width="16" height="10" rx="2" data-page-node-id="OKGQz59DwBVNNEVURdkh8k"/><path d="M8 11V7a4 4 0 0 1 7.5-2" data-page-node-id="HGjAFWsxhbbJB5KqNxGT4B"/></svg></span>
+      <span data-page-node-id="UlPno97KFpNvPaaIMzXwhz"><span class="name" data-page-node-id="kR7RgRnb1YMELG02eS5YgQ">解锁</span><span class="desc" data-page-node-id="DhHqv7UIoJyJJ4N92jWkUY">长按开门 · 会真正触发开门</span></span>
+    </button>
+  </div>
+
+  <div class="log" id="log" data-page-node-id="ImW5hviGfy7In5l4dAcvxQ">准备就绪，点击任意按钮下发指令。</div>
+
+  <footer data-page-node-id="QWmwdhfIJY7cQshvuJSJKt">
+    远程点击器控制面板 · 巴法云 MQTT<br data-page-node-id="evSutNq0FwNMUTZop6Misu">指令经加密链路下发至设备
+  </footer>
+</div>
+
+<div class="toast" id="toast" data-page-node-id="KLAiJVzf6xh8ItBWThciCI"><span id="toastText" data-page-node-id="4FsDz7z6t80zXjDnZj4mgS"></span></div>
+
+<script>
+(function(){
+  var UID='a5931495a05b45f88a5db1f993d9621f';
+  var TOPIC='fengmm521';
+  var dot=document.getElementById('dot');
+  var statusText=document.getElementById('statusText');
+  var logEl=document.getElementById('log');
+  var toast=document.getElementById('toast');
+  var toastText=document.getElementById('toastText');
+  var busy=false;
+  var toastTimer=null;
+
+  function setStatus(state,text){
+    dot.className='dot'+(state?' '+state:'');
+    statusText.textContent=text;
+  }
+  function showToast(msg,err){
+    toastText.textContent=msg;
+    toast.className='toast show'+(err?' err':'');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){toast.className='toast';},2200);
+  }
+  function log(msg){
+    var t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+    logEl.textContent='['+t+'] '+msg;
+  }
+
+  // 用 fetch 直连巴法云（已开启 CORS）；失败时用 Image 兜底（不受跨域限制）
+  function request(url){
+    return new Promise(function(resolve,reject){
+      var settled=false;
+      fetch(url,{mode:'cors',cache:'no-store'}).then(function(r){return r.json()}).then(function(j){
+        if(settled)return;settled=true;
+        if(j&&j.code===0)resolve();else reject(new Error((j&&j.message)||'fail'));
+      }).catch(function(){
+        if(settled)return;
+        var img=new Image();
+        img.onload=function(){if(!settled){settled=true;resolve()}};
+        img.onerror=function(){if(!settled){settled=true;reject(new Error('network'))}};
+        img.src=url;
+      });
+      setTimeout(function(){if(!settled){settled=true;reject(new Error('timeout'))}},9000);
+    });
+  }
+
+  function send(btn){
+    if(busy)return;
+    var msg=btn.getAttribute('data-msg');
+    var name=btn.getAttribute('data-name');
+    busy=true;
+    setStatus('busy','正在下发「'+name+'」…');
+    btn.classList.add('sending');
+    log('下发指令：'+name+'（msg='+msg+'）');
+    var url='https://apis.bemfa.com/va/sendMessage?uid='+UID+'&topic='+TOPIC+'&type=3&msg='+encodeURIComponent(msg)+'&_='+Date.now();
+    request(url).then(function(){
+      showToast('✓ '+name+' 已发送');
+      setStatus('on','设备在线 · 指令已下发');
+      log('成功：'+name+' 指令已送达设备');
+    }).catch(function(e){
+      showToast('✗ 发送失败：'+e.message,true);
+      setStatus('','发送失败，请重试');
+      log('失败：'+name+'（'+e.message+'）');
+    }).then(function(){
+      busy=false;
+      btn.classList.remove('sending');
+    });
+  }
+
+  var buttons=document.querySelectorAll('[data-msg]');
+  for(var i=0;i<buttons.length;i++){
+    (function(b){
+      b.addEventListener('click',function(e){e.preventDefault();send(b)});
+    })(buttons[i]);
+  }
+
+  setStatus('','就绪 · 点击下方按钮控制设备');
+})();
+</script>
+</body>
+</html>
