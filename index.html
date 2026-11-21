@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>远程控制 · 门禁点击器 v2</title>
+<title>远程控制 · 门禁点击器 v3</title>
 <style>
   :root{
     --bg:#0d1b2a; --bg2:#13263b; --card:#1b324d; --card-hi:#24425f;
@@ -23,53 +23,50 @@
     color:var(--text);min-height:100%;display:flex;justify-content:center;
     -webkit-user-select:none;user-select:none;
   }
-  .app{width:100%;max-width:480px;padding:24px 20px calc(28px + var(--safe-bottom));display:flex;flex-direction:column}
+  .app{width:100%;max-width:480px;padding:14px 16px calc(14px + var(--safe-bottom));display:flex;flex-direction:column}
 
-  header{text-align:center;margin-bottom:22px}
+  header{text-align:center;margin-bottom:10px}
   .logo{
-    width:62px;height:62px;margin:0 auto 12px;border-radius:18px;
+    width:46px;height:46px;margin:0 auto 7px;border-radius:13px;
     background:linear-gradient(145deg,#24425f,#162c45);
     border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
-    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    box-shadow:0 6px 18px rgba(0,0,0,.3);
   }
-  .logo svg{width:32px;height:32px}
-  h1{font-size:20px;font-weight:600;margin:0 0 6px;letter-spacing:.5px}
-  .sub{font-size:13px;color:var(--muted);margin:0}
+  .logo svg{width:25px;height:25px}
+  h1{font-size:18px;font-weight:600;margin:0 0 3px;letter-spacing:.5px}
+  .sub{font-size:11px;color:var(--muted);margin:0}
 
-  .status{
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    font-size:12px;color:var(--muted);margin:16px 0 18px;
-  }
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.25s}
-  .dot.on{background:var(--green);box-shadow:0 0 0 4px rgba(46,204,113,.15)}
-  .dot.busy{background:var(--amber);box-shadow:0 0 0 4px rgba(255,182,72,.15)}
+  .status{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;color:var(--muted);margin:8px 0 10px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:.25s}
+  .dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(46,204,113,.15)}
+  .dot.busy{background:var(--amber);box-shadow:0 0 0 3px rgba(255,182,72,.15)}
 
   .primary{
-    width:100%;border:1px solid #2f7ad6;border-radius:20px;
+    width:100%;border:1px solid #2f7ad6;border-radius:15px;
     background:linear-gradient(145deg,#2f7ad6,#1f5fa8);
-    color:#fff;padding:22px 18px;margin-bottom:18px;cursor:pointer;
-    display:flex;align-items:center;gap:16px;text-align:left;
-    box-shadow:0 10px 28px rgba(47,122,214,.32);transition:transform .08s,filter .15s;
+    color:#fff;padding:13px 14px;margin-bottom:10px;cursor:pointer;
+    display:flex;align-items:center;gap:12px;text-align:left;
+    box-shadow:0 6px 18px rgba(47,122,214,.28);transition:transform .08s,filter .15s;
   }
   .primary:active{transform:scale(.98);filter:brightness(1.1)}
-  .primary .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .primary .ic svg{width:26px;height:26px}
-  .primary .t1{font-size:18px;font-weight:600}
-  .primary .t2{font-size:12px;opacity:.85;margin-top:4px;line-height:1.4}
-  .primary .arrow{margin-left:auto;opacity:.8;font-size:20px}
+  .primary .ic{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .primary .ic svg{width:21px;height:21px}
+  .primary .t1{font-size:16px;font-weight:600}
+  .primary .t2{font-size:11px;opacity:.85;margin-top:2px;line-height:1.35}
+  .primary .arrow{margin-left:auto;opacity:.8;font-size:18px}
 
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
   .btn{
-    border:1px solid var(--line);border-radius:18px;background:var(--card);
-    color:var(--text);padding:20px 16px;cursor:pointer;text-align:left;
-    display:flex;flex-direction:column;gap:12px;min-height:132px;
+    border:1px solid var(--line);border-radius:14px;background:var(--card);
+    color:var(--text);padding:10px 11px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:9px;min-height:64px;
     transition:transform .08s,background .15s,border-color .15s;
   }
   .btn:active{transform:scale(.97)}
-  .btn .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center}
-  .btn .ic svg{width:22px;height:22px}
-  .btn .name{font-size:16px;font-weight:600}
-  .btn .desc{font-size:11px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .btn .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .btn .ic svg{width:19px;height:19px}
+  .btn .name{font-size:14px;font-weight:600;display:block}
+  .btn .desc{font-size:10px;color:var(--muted);line-height:1.35;margin-top:2px;display:block}
   .btn.c-back .ic{background:rgba(59,157,255,.16);color:var(--blue)}
   .btn.c-prev .ic{background:rgba(167,139,250,.16);color:var(--purple)}
   .btn.c-gate .ic{background:rgba(255,182,72,.16);color:var(--amber)}
@@ -77,44 +74,48 @@
   .btn.c-open .name{color:var(--red)}
   .btn.sending{opacity:.55;pointer-events:none}
 
-  .progress{
-    margin-top:18px;background:rgba(0,0,0,.18);border:1px solid var(--line);
-    border-radius:16px;padding:16px;
-  }
-  .progress h2{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 14px;letter-spacing:.5px}
-  .steps{display:flex;flex-direction:column;gap:10px}
-  .step{display:flex;align-items:center;gap:12px;font-size:14px;color:#6d839e;transition:color .3s}
+  .progress{margin-top:10px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+  .progress h2{font-size:11px;font-weight:600;color:var(--muted);margin:0 0 8px;letter-spacing:.5px}
+  .wake-row{display:flex;align-items:center;gap:9px;font-size:12px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.1)}
+  .wake-lamp{width:13px;height:13px;border-radius:50%;background:#3a5573;flex:0 0 auto;transition:background .25s}
+  .wake-lamp.flash{background:var(--amber);animation:wakeflash .55s infinite}
+  .wake-lamp.done{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .wake-name{color:var(--text)}
+  .wake-hint{margin-left:auto;font-size:10px;color:var(--muted)}
+  @keyframes wakeflash{0%,100%{opacity:1;box-shadow:0 0 10px var(--amber)}50%{opacity:.3;box-shadow:0 0 2px var(--amber)}}
+  .steps{display:flex;flex-direction:column;gap:5px}
+  .step{display:flex;align-items:center;gap:9px;font-size:12px;color:#6d839e;transition:color .3s}
   .step .box{
-    width:24px;height:24px;border-radius:50%;border:2px solid #3a5573;flex:0 0 auto;
-    display:flex;align-items:center;justify-content:center;font-size:13px;color:#3a5573;transition:.3s;
+    width:20px;height:20px;border-radius:50%;border:2px solid #3a5573;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#3a5573;transition:.3s;
   }
   .step.done{color:var(--green)}
   .step.done .box{border-color:var(--green);background:var(--green);color:#0d1b2a}
   .step.active{color:var(--amber)}
   .step.active .box{border-color:var(--amber);animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,72,.4)}50%{box-shadow:0 0 0 6px rgba(255,182,72,0)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,72,.4)}50%{box-shadow:0 0 0 5px rgba(255,182,72,0)}}
 
-  footer{margin-top:22px;text-align:center;font-size:11px;color:#5f7897;line-height:1.7}
-  .log{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--muted);text-align:left}
-  .log-title{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  footer{margin-top:9px;text-align:center;font-size:10px;color:#5f7897;line-height:1.5}
+  .log{margin-top:9px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:11px;padding:8px 10px;text-align:left}
+  .log-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
   .log-title .blip{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(46,204,113,.15)}
   .log-body{
-    height:200px;overflow-y:auto;overflow-x:hidden;word-break:break-all;line-height:1.6;
-    display:flex;flex-direction:column;gap:5px;scroll-behavior:smooth;
+    height:132px;overflow-y:auto;overflow-x:hidden;word-break:break-all;line-height:1.45;
+    display:flex;flex-direction:column;gap:3px;scroll-behavior:smooth;
     -webkit-overflow-scrolling:touch;
-    background:rgba(0,0,0,.25);border-radius:8px;padding:8px 10px;
+    background:rgba(0,0,0,.25);border-radius:7px;padding:6px 8px;
   }
   .log-body::-webkit-scrollbar{width:4px}
   .log-body::-webkit-scrollbar-thumb{background:#3a5573;border-radius:4px}
-  .log-line{color:var(--muted);font-size:12px;flex:0 0 auto;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .log-line{color:var(--muted);font-size:11px;flex:0 0 auto;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
   .log-line .ts{color:#5f7897;margin-right:6px}
   .log-line.ok{color:var(--green)}
   .log-line.err{color:var(--red)}
   .log-line.prog{color:var(--amber)}
 
   .toast{
-    position:fixed;left:50%;bottom:calc(30px + var(--safe-bottom));transform:translate(-50%,20px);
-    background:#fff;color:#12233a;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:500;
+    position:fixed;left:50%;bottom:calc(24px + var(--safe-bottom));transform:translate(-50%,20px);
+    background:#fff;color:#12233a;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:500;
     box-shadow:0 12px 40px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.25s;z-index:9;
     display:flex;align-items:center;gap:8px;white-space:nowrap;
   }
@@ -175,27 +176,27 @@
 
   <div class="progress" data-page-node-id="progressPanel">
     <h2>执行进度 · 实时回传</h2>
+    <div class="wake-row">
+      <span class="wake-lamp" id="wakeLamp"></span>
+      <span class="wake-name">唤醒屏幕</span>
+      <span class="wake-hint" id="wakeHint">待机</span>
+    </div>
     <div class="steps">
-      <div class="step" id="stepWake"><span class="box">1</span><span>唤醒屏幕</span></div>
-      <div class="step" id="stepPreview"><span class="box">2</span><span>预览</span></div>
-      <div class="step" id="stepGate"><span class="box">3</span><span>门禁</span></div>
-      <div class="step" id="stepUnlock"><span class="box">4</span><span>解锁开门</span></div>
+      <div class="step" id="stepPreview"><span class="box">1</span><span>预览</span></div>
+      <div class="step" id="stepGate"><span class="box">2</span><span>门禁</span></div>
+      <div class="step" id="stepUnlock"><span class="box">3</span><span>解锁开门</span></div>
     </div>
   </div>
 
   <div class="log" data-page-node-id="ImW5hviGfy7In5l4dAcvxQ">
-    <div class="log-title"><span class="blip"></span>执行日志 · 最近消息 <span style="color:var(--amber);font-weight:700">v2</span></div>
+    <div class="log-title"><span class="blip"></span>执行日志 · 最近消息 <span style="color:var(--amber);font-weight:700">v3</span></div>
     <div class="log-body" id="log">
-      <div class="log-line"><span class="ts">系统</span>日志窗口已升级为可滚动多行（v2），保留最近 30 条</div>
-      <div class="log-line"><span class="ts">提示</span>点击上方按钮后，下发 / 进度 / 结果会逐行追加在此</div>
-      <div class="log-line"><span class="ts">颜色</span><span style="color:var(--green)">绿=成功</span> · <span style="color:var(--amber)">橙=进度</span> · <span style="color:var(--red)">红=失败</span></div>
+      <div class="log-line"><span class="ts">提示</span>下发 / 进度 / 结果逐行显示，保留最近 30 条</div>
       <div class="log-line"><span class="ts">--:--:--</span>准备就绪，点击任意按钮下发指令。</div>
     </div>
   </div>
 
-  <footer data-page-node-id="QWmwdhfIJY7cQshvuJSJKt">
-    远程点击器控制面板 · 巴法云 MQTT<br data-page-node-id="evSutNq0FwNMUTZop6Misu">指令经加密链路下发至设备
-  </footer>
+  <footer data-page-node-id="QWmwdhfIJY7cQshvuJSJKt">远程点击器控制面板 · 指令经巴法云下发至设备</footer>
 </div>
 
 <div class="toast" id="toast" data-page-node-id="KLAiJVzf6xh8ItBWThciCI"><span id="toastText" data-page-node-id="4FsDz7z6t80zXjDnZj4mgS"></span></div>
@@ -210,14 +211,18 @@
   var logEl=document.getElementById('log');
   var toast=document.getElementById('toast');
   var toastText=document.getElementById('toastText');
+  var wakeLamp=document.getElementById('wakeLamp');
+  var wakeHint=document.getElementById('wakeHint');
   var busy=false;
   var toastTimer=null;
   var pollTimer=null;
   var pollRound=0;
   var clickTs=0;
   var currentMsg='';
-  var stepIds={wake:'stepWake',preview:'stepPreview',gate:'stepGate',unlock:'stepUnlock'};
-  var stepNums={stepWake:'1',stepPreview:'2',stepGate:'3',stepUnlock:'4'};
+  var wakeActive=false;
+  var wakeFlashTimer=null;
+  var stepIds={preview:'stepPreview',gate:'stepGate',unlock:'stepUnlock'};
+  var stepNums={stepPreview:'1',stepGate:'2',stepUnlock:'3'};
   var singleStep={'2':'wake','3':'preview','4':'gate','5':'unlock'};
 
   function setStatus(state,text){
@@ -240,19 +245,33 @@
     line.appendChild(ts);
     line.appendChild(document.createTextNode(msg));
     logEl.appendChild(line);
-    // 只保留最近 30 条，避免无限增长
     while(logEl.childElementCount>30)logEl.removeChild(logEl.firstChild);
     logEl.scrollTop=logEl.scrollHeight;
   }
 
   function resetSteps(){
+    wakeActive=false;
+    if(wakeFlashTimer){clearTimeout(wakeFlashTimer);wakeFlashTimer=null;}
+    wakeLamp.className='wake-lamp';
+    wakeHint.textContent='待机';
     for(var k in stepNums){
       var el=document.getElementById(k);
       el.className='step';
       el.querySelector('.box').textContent=stepNums[k];
     }
   }
+  function flashWake(){
+    if(wakeActive)return;
+    wakeActive=true;
+    wakeLamp.className='wake-lamp flash';
+    wakeHint.textContent='唤醒中…';
+    wakeFlashTimer=setTimeout(function(){
+      wakeLamp.className='wake-lamp done';
+      wakeHint.textContent='已唤醒';
+    },1800);
+  }
   function markDone(code,onlyOne){
+    if(code==='wake'){flashWake();return;}
     var id=stepIds[code];
     if(!id)return;
     if(onlyOne && code!==onlyOne)return;
@@ -268,15 +287,21 @@
       var item=arr[0];
       var msg=String(item.msg||'');
       if(msg.indexOf(PREFIX)!==0)return;
-      // 只接受本次点击之后产生的新消息，忽略历史残留
       var ts=Number(item.unix)||0;
       if(ts && ts < clickTs-2)return;
       var codes=msg.slice(PREFIX.length).split('|');
       var onlyOne = currentMsg==='1' ? null : singleStep[currentMsg];
-      for(var i=0;i<codes.length;i++)markDone(codes[i],onlyOne);
-      if(codes.length){
-        log('设备进度：'+codes.join(' → '),'prog');
+      var others=[];
+      for(var i=0;i<codes.length;i++){
+        markDone(codes[i],onlyOne);
+        if(codes[i]!=='wake' && codes[i]!=='')others.push(codes[i]);
+      }
+      // wake 只走指示灯，不再刷进度日志；其余步骤照常记录
+      if(others.length){
+        log('设备进度：'+others.join(' → '),'prog');
         setStatus('on','设备在线 · 执行中');
+      } else if(codes.indexOf('wake')>=0){
+        setStatus('on','设备在线 · 唤醒中');
       }
     }).catch(function(){});
   }
@@ -292,7 +317,7 @@
     },1200);
   }
 
-  // 用 fetch 直连巴法云（已开启 CORS）；失败时用 Image 兜底（不受跨域限制）
+  // 用 fetch 直连巴法云（已开启 CORS）；失败时用 Image 兜底
   function request(url){
     return new Promise(function(resolve,reject){
       var settled=false;
