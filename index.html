@@ -74,6 +74,23 @@
   .btn.c-open .name{color:var(--red)}
   .btn.sending{opacity:.55;pointer-events:none}
 
+  .progress{
+    margin-top:18px;background:rgba(0,0,0,.18);border:1px solid var(--line);
+    border-radius:16px;padding:16px;
+  }
+  .progress h2{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 14px;letter-spacing:.5px}
+  .steps{display:flex;flex-direction:column;gap:10px}
+  .step{display:flex;align-items:center;gap:12px;font-size:14px;color:#6d839e;transition:color .3s}
+  .step .box{
+    width:24px;height:24px;border-radius:50%;border:2px solid #3a5573;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:#3a5573;transition:.3s;
+  }
+  .step.done{color:var(--green)}
+  .step.done .box{border-color:var(--green);background:var(--green);color:#0d1b2a}
+  .step.active{color:var(--amber)}
+  .step.active .box{border-color:var(--amber);animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,182,72,.4)}50%{box-shadow:0 0 0 6px rgba(255,182,72,0)}}
+
   footer{margin-top:22px;text-align:center;font-size:11px;color:#5f7897;line-height:1.7}
   .log{margin-top:14px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:11px;color:var(--muted);min-height:18px;text-align:left;word-break:break-all}
 
@@ -138,6 +155,16 @@
     </button>
   </div>
 
+  <div class="progress" data-page-node-id="progressPanel">
+    <h2>执行进度 · 实时回传</h2>
+    <div class="steps">
+      <div class="step" id="stepWake"><span class="box">1</span><span>唤醒屏幕</span></div>
+      <div class="step" id="stepPreview"><span class="box">2</span><span>预览</span></div>
+      <div class="step" id="stepGate"><span class="box">3</span><span>门禁</span></div>
+      <div class="step" id="stepUnlock"><span class="box">4</span><span>解锁开门</span></div>
+    </div>
+  </div>
+
   <div class="log" id="log" data-page-node-id="ImW5hviGfy7In5l4dAcvxQ">准备就绪，点击任意按钮下发指令。</div>
 
   <footer data-page-node-id="QWmwdhfIJY7cQshvuJSJKt">
@@ -151,6 +178,7 @@
 (function(){
   var UID='a5931495a05b45f88a5db1f993d9621f';
   var TOPIC='fengmm521';
+  var PREFIX='#S#';
   var dot=document.getElementById('dot');
   var statusText=document.getElementById('statusText');
   var logEl=document.getElementById('log');
@@ -158,6 +186,13 @@
   var toastText=document.getElementById('toastText');
   var busy=false;
   var toastTimer=null;
+  var pollTimer=null;
+  var pollRound=0;
+  var clickTs=0;
+  var currentMsg='';
+  var stepIds={wake:'stepWake',preview:'stepPreview',gate:'stepGate',unlock:'stepUnlock'};
+  var stepNums={stepWake:'1',stepPreview:'2',stepGate:'3',stepUnlock:'4'};
+  var singleStep={'2':'wake','3':'preview','4':'gate','5':'unlock'};
 
   function setStatus(state,text){
     dot.className='dot'+(state?' '+state:'');
@@ -172,6 +207,53 @@
   function log(msg){
     var t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
     logEl.textContent='['+t+'] '+msg;
+  }
+
+  function resetSteps(){
+    for(var k in stepNums){
+      var el=document.getElementById(k);
+      el.className='step';
+      el.querySelector('.box').textContent=stepNums[k];
+    }
+  }
+  function markDone(code,onlyOne){
+    var id=stepIds[code];
+    if(!id)return;
+    if(onlyOne && code!==onlyOne)return;
+    var el=document.getElementById(id);
+    el.className='step done';
+    el.querySelector('.box').textContent='✓';
+  }
+  function fetchProgress(){
+    var url='https://apis.bemfa.com/va/getmsg?uid='+UID+'&topic='+TOPIC+'&type=3&_='+Date.now();
+    fetch(url,{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){
+      var arr=j&&j.data;
+      if(!arr||!arr.length)return;
+      var item=arr[0];
+      var msg=String(item.msg||'');
+      if(msg.indexOf(PREFIX)!==0)return;
+      // 只接受本次点击之后产生的新消息，忽略历史残留
+      var ts=Number(item.unix)||0;
+      if(ts && ts < clickTs-2)return;
+      var codes=msg.slice(PREFIX.length).split('|');
+      var onlyOne = currentMsg==='1' ? null : singleStep[currentMsg];
+      for(var i=0;i<codes.length;i++)markDone(codes[i],onlyOne);
+      if(codes.length){
+        log('设备进度：'+codes.join(' → '));
+        setStatus('on','设备在线 · 执行中');
+      }
+    }).catch(function(){});
+  }
+  function startPolling(msg){
+    currentMsg=msg;
+    pollRound=0;
+    clickTs=Math.floor(Date.now()/1000)-1;
+    if(pollTimer)clearInterval(pollTimer);
+    pollTimer=setInterval(function(){
+      fetchProgress();
+      pollRound++;
+      if(pollRound>=16){clearInterval(pollTimer);pollTimer=null;}
+    },1200);
   }
 
   // 用 fetch 直连巴法云（已开启 CORS）；失败时用 Image 兜底（不受跨域限制）
@@ -197,6 +279,7 @@
     var msg=btn.getAttribute('data-msg');
     var name=btn.getAttribute('data-name');
     busy=true;
+    resetSteps();
     setStatus('busy','正在下发「'+name+'」…');
     btn.classList.add('sending');
     log('下发指令：'+name+'（msg='+msg+'）');
@@ -204,7 +287,8 @@
     request(url).then(function(){
       showToast('✓ '+name+' 已发送');
       setStatus('on','设备在线 · 指令已下发');
-      log('成功：'+name+' 指令已送达设备');
+      log('成功：'+name+' 指令已送达设备，等待设备回传进度…');
+      startPolling(msg);
     }).catch(function(e){
       showToast('✗ 发送失败：'+e.message,true);
       setStatus('','发送失败，请重试');
