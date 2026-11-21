@@ -206,6 +206,9 @@
   var UID='a5931495a05b45f88a5db1f993d9621f';
   var TOPIC='fengmm521';
   var PREFIX='#S#';
+  // 全流程“一键开门”固定地址（与苹果快捷指令完全同一条）：只下发一次 msg=1，
+  // 唤醒/预览/门禁/解锁四步由板子本地连续执行，避免网络抖动造成多次请求不连续。
+  var FULLFLOW_URL='https://apis.bemfa.com/va/sendMessage?uid='+UID+'&topic='+TOPIC+'&type=3&msg=1';
   var dot=document.getElementById('dot');
   var statusText=document.getElementById('statusText');
   var logEl=document.getElementById('log');
@@ -343,8 +346,15 @@
     resetSteps();
     setStatus('busy','正在下发「'+name+'」…');
     btn.classList.add('sending');
-    log('下发指令：'+name+'（msg='+msg+'）');
-    var url='https://apis.bemfa.com/va/sendMessage?uid='+UID+'&topic='+TOPIC+'&type=3&msg='+encodeURIComponent(msg)+'&_='+Date.now();
+    if(msg==='1'){
+      // 全流程：直接用固定的一键开门地址，只发一次请求，后续步骤由板子本地连续处理
+      log('全流程：一键开门（单次请求，板子连续执行）');
+    }else{
+      log('下发指令：'+name+'（msg='+msg+'）');
+    }
+    var url=(msg==='1')
+      ? FULLFLOW_URL+'&_='+Date.now()
+      : 'https://apis.bemfa.com/va/sendMessage?uid='+UID+'&topic='+TOPIC+'&type=3&msg='+encodeURIComponent(msg)+'&_='+Date.now();
     request(url).then(function(){
       showToast('✓ '+name+' 已发送');
       setStatus('on','设备在线 · 指令已下发');
